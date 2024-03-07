@@ -1,0 +1,202 @@
+-----------------------
+beginning round 0
+Alice :  100
+Bob :  50
+Camille :  200
+playing Tails I Win with book:
+   Alice : $ 15
+   Bob : $ 25
+   Camille : $ 10
+coin was tails.
+game finished!
+  Alice has lost!
+  Bob has lost!
+  Camille has lost!
+casino made 50 on this game.
+
+Alice :  85
+Bob :  25
+Camille :  190
+playing Guess the Number with book:
+   Alice : $ 15
+   Bob : $ 12.5
+   Camille : $ 10
+the correct answer is: 3
+Alice guesses 4
+Bob guesses 2
+Camille guesses 3
+game finished!
+  Camille is a winner! they won:  25
+  Alice has lost!
+  Bob has lost!
+casino made 2.5 on this game.
+
+Alice :  70
+Bob :  12.5
+Camille :  215
+playing Off-track Guinea Pig Racing with book:
+   Alice : $ 15
+   Bob : $ 6.25
+   Camille : $ 20
+Alice bets on pig 3
+Bob bets on pig 1
+Camille bets on pig 1
+the winning pig was 0
+game finished!
+  Alice has lost!
+  Bob has lost!
+  Camille has lost!
+casino made 41.25 on this game.
+
+round complete. casino made:  93.75
+total profit: 93.75
+-----------------------
+
+-----------------------
+beginning round 1
+Alice :  55
+Bob :  6.25
+Camille :  195
+playing Tails I Win with book:
+   Alice : $ 15
+   Bob : $ 6.25
+   Camille : $ 10
+coin was tails.
+game finished!
+  Alice has lost!
+  Bob has lost!
+  Camille has lost!
+casino made 31.25 on this game.
+
+Alice :  40
+Bob :  0
+Bob has gone bankrupt! They leave the casino...
+Camille :  185
+playing Guess the Number with book:
+   Alice : $ 15
+   Camille : $ 10
+the correct answer is: 3
+Alice guesses 1
+Camille guesses 1
+game finished!
+  Alice has lost!
+  Camille has lost!
+casino made 25 on this game.
+
+Alice :  25
+Camille :  175
+playing Off-track Guinea Pig Racing with book:
+   Alice : $ 15
+   Camille : $ 10
+Alice bets on pig 0
+Camille bets on pig 0
+the winning pig was 1
+game finished!
+  Alice has lost!
+  Camille has lost!
+casino made 25 on this game.
+
+round complete. casino made:  81.25
+total profit: 175
+-----------------------
+
+-----------------------
+beginning round 2
+Alice :  10
+Camille :  165
+playing Tails I Win with book:
+   Alice : $ 10
+   Camille : $ 10
+coin was tails.
+game finished!
+  Alice has lost!
+  Camille has lost!
+casino made 20 on this game.
+
+Alice :  0
+Alice has gone bankrupt! They leave the casino...
+Camille :  155
+playing Guess the Number with book:
+   Camille : $ 10
+the correct answer is: 1
+Camille guesses 0
+game finished!
+  Camille has lost!
+casino made 10 on this game.
+
+Camille :  145
+playing Off-track Guinea Pig Racing with book:
+   Camille : $ 10
+Camille bets on pig 3
+the winning pig was 2
+game finished!
+  Camille has lost!
+casino made 10 on this game.
+
+round complete. casino made:  40
+total profit: 215
+-----------------------
+
+-----------------------
+beginning round 3
+Camille :  135
+playing Tails I Win with book:
+   Camille : $ 10
+coin was tails.
+game finished!
+  Camille has lost!
+casino made 10 on this game.
+
+Camille :  125
+playing Guess the Number with book:
+   Camille : $ 10
+the correct answer is: 2
+Camille guesses 3
+game finished!
+  Camille has lost!
+casino made 10 on this game.
+
+Camille :  115
+playing Off-track Guinea Pig Racing with book:
+   Camille : $ 10
+Camille bets on pig 1
+the winning pig was 0
+game finished!
+  Camille has lost!
+casino made 10 on this game.
+
+round complete. casino made:  30
+total profit: 245
+-----------------------
+
+-----------------------
+beginning round 4
+Camille :  105
+playing Tails I Win with book:
+   Camille : $ 10
+coin was heads
+game finished!
+  Camille is a winner! they won:  9
+casino made -9 on this game.
+
+Camille :  114
+playing Guess the Number with book:
+   Camille : $ 20
+the correct answer is: 0
+Camille guesses 4
+game finished!
+  Camille has lost!
+casino made 20 on this game.
+
+Camille :  94
+playing Off-track Guinea Pig Racing with book:
+   Camille : $ 10
+Camille bets on pig 0
+the winning pig was 3
+game finished!
+  Camille has lost!
+casino made 10 on this game.
+
+round complete. casino made:  21
+total profit: 266
+-----------------------
