@@ -4,10 +4,9 @@
 // that method is declared "abstract", meaning "our child classes will have to 
 // fill in what it does". 
 
-import { start } from "repl";
 
 /** Represents a casino game. */
-abstract class Game {
+class Game {
     // every game is required to store a name
     private _name: string;
 
@@ -23,6 +22,8 @@ abstract class Game {
     // we could pass the casino in as an argument, along with book.
     // there are good benefits to that design, but let's do it the more
     // object-oriented, less functional way for our own education:
+	private _game_sim: SimGame;
+
     private _casino: Casino;
     public get casino(): Casino { return this._casino }
 
@@ -32,10 +33,11 @@ abstract class Game {
     /** Construct a casino game with the given name, belonging to the
      * given casino.
      */
-    constructor( name: string, casino: Casino ) {
+    constructor( name: string, casino: Casino, gameSim: SimGame) {
         this._name = name;
         this._book = new Map();
         this._casino = casino;
+		this._game_sim = gameSim;
     }
     // but wait, I thought we couldn't construct a Game?
     // we can't, we aren't allowed to write new Game(...);
@@ -56,8 +58,6 @@ abstract class Game {
     // blackjack is a Game, so it can be passed into game, and we know
     // we can call "playGame" on it.
     
-    /** Actually run the game and return who won. */
-    protected abstract simulateGame(): Gambler[];
     // the child class will figure out which gamblers won and return them.
     // this method is abstract: it has no definition. It's up to the child
     // classes to decide what it does. 
@@ -85,7 +85,7 @@ abstract class Game {
             console.log( "  ", player.name, ": $", bet );
         }
 
-        const winners = this.simulateGame();
+        const winners = this._game_sim.simulateGame(this.getPlayers());
 
         console.log( "game finished!" );
 
@@ -153,19 +153,26 @@ abstract class Game {
 	}
 }
 
+
+interface SimGame {
+	current_profit_mult: number;
+	simulateGame(players: Gambler[]): Gambler[];
+}
+
 /** This is a game where the players all place their bets at the same 
  * time. The dealer will flip a coin. If the coin is heads, the players 
  * win and their money is doubled. Otherwise, the players lose their bets. */ 
-class TailsIWin extends Game {
+class TailsIWin implements SimGame {
+	current_profit_mult = 0.9;
     // You need to add a constructor. What should go in it?
 
     // try commenting out this method and see what error you get.
     // why do you get that error?
-    override simulateGame(): Gambler[] {
+    public simulateGame(my_players: Gambler[]): Gambler[] {
 		let returnable : Gambler[] = [];
         if(randomInt(2) == 1) {
 			// HEADS ~ Player win
-			returnable = returnable.concat(this.getPlayers());
+			returnable = returnable.concat(my_players);
 			console.log("Coin was heads.");
 		} else {
 			console.log("Coin was tails.");
@@ -173,8 +180,6 @@ class TailsIWin extends Game {
 		return returnable;
 		
     }
-
-	override profitMultiplier( _gambler: Gambler ): number { return 0.9; }
 }
 
 
@@ -198,11 +203,11 @@ function randomInt( upper: number ) {
  * picks the same number as the dealer, they get back 4.5x their bet.
  * (total profit of 3.5x). Otherwise, they lose their money.
  */
-class GuessTheNumber extends Game {
+class GuessTheNumber implements SimGame  {
+	current_profit_mult = 3.5;
 	// TODO - Impliment game properly
-	override simulateGame(): Gambler[] {
+	public simulateGame(my_players: Gambler[]): Gambler[] {
 		let returnable : Gambler[] = [];
-		let my_players = this.getPlayers();
 		let win_num = randomInt(5);
 		for (let index = 0; index < my_players.length; index++) {
 			const lucky_sucker = my_players[index];
@@ -216,8 +221,8 @@ class GuessTheNumber extends Game {
 		console.log("the correct answer is: " + win_num);   
 		return returnable;		
     }    
-	override profitMultiplier( _gambler: Gambler ): number { return 3.5; }
 } 
+
 
 /**
  * Simulated guinea-pig racing. Players choose a pig from 0 to 3.
@@ -229,29 +234,28 @@ class GuessTheNumber extends Game {
  * There are no complicated horse-racing-style bets (e.g., place, show, etc.),
  * each player just picks a pig. 
  */
-class OffTrackGuineaPigRacing extends Game {
-	private _current_profitMul = 1;
+class OffTrackGuineaPigRacing implements SimGame {
+	current_profit_mult = 1;
 	// TODO - Impliment game properly
-	override simulateGame(): Gambler[] {
+	public simulateGame(my_players: Gambler[]): Gambler[] {
 		let returnable : Gambler[] = [];
-		let my_players = this.getPlayers();
 		let theMarket = [0,0,0,0,1,1,2,3]; // I made a cool wighted probability function once... once
 		let winningPiggy = theMarket[randomInt(theMarket.length)];
 		switch (winningPiggy) {
 			case 0:
-				this._current_profitMul = 0.9;
+				this.current_profit_mult = 0.9;
 				break;
 			case 1:
-				this._current_profitMul = 2.8;
+				this.current_profit_mult = 2.8;
 				break;
 			case 2:
-				this._current_profitMul = 6.6;
+				this.current_profit_mult = 6.6;
 				break;
 			case 3:
-				this._current_profitMul = 6.6;
+				this.current_profit_mult = 6.6;
 				break;
 			default:
-				this._current_profitMul = 0; // The house always wins
+				this.current_profit_mult = 0; // The house always wins
 				break;
 		}
 		for (let index = 0; index < my_players.length; index++) {
@@ -266,7 +270,6 @@ class OffTrackGuineaPigRacing extends Game {
 		console.log("the winning pig was " + winningPiggy);
 		return returnable;		
     }        
-	override profitMultiplier( _gambler: Gambler ): number { return this._current_profitMul; }
 } 
 
 /** I was a slot machine technician IRL 
@@ -276,6 +279,7 @@ class OffTrackGuineaPigRacing extends Game {
  * 
  * Cost to play is fixed, but a portion of money spent is added to a jackpot
 */
+/* currently disabled
 class SlotMachcine extends Game {
 
 	private _play_cost = 2;
@@ -367,216 +371,141 @@ class SlotMachcine extends Game {
 		this.clearBook();
     }
 } 
+*/
 
-abstract class Gambler {
-    private _name: string;
-    private _money: number;
 
-    /** how much money the gambler is trying to get */
-    private _target: number; 
 
-    public constructor( 
-        name: string, 
-        startingFunds: number, 
-        targetFunds: number 
-    ) {
-        this._name = name;
-		this._money = startingFunds;
-		this._target = targetFunds;
-    }
+class Gambler {
+	private _name: string;
+	private _brain: MindBrain;
+	private _money: number; // wallet
 
-    // These are properties. 
-    // When we create a gambler: const gambler = new Gambler(...);
-    // we can write this: console.log( gambler.name )
-    // get name(): ... makes it so that when we access gambler.name, 
-    // the function { return this._name } gets called. This allows us
-    // to read the name inside the gambler. 
-    // Getters are public by default, so this is a way of reading a public 
-    // variable.
-    // However, get can only get a value. It's not able to set values. So
-    // name is a read-only property, which is what we want. 
+	public constructor(name: string, brain: MindBrain, wallet: number) {
+		this._name = name;
+		this._brain = brain;
+		this._money = wallet;
+	}
+
     get name(): string { return this._name }
     get money(): number { return this._money }
-    get target(): number { return this._target }
+    get target(): number { return this._brain.leaveAmount; }
 
-    /**
-     * Add or deduct a given amount of money to the gambler's bankroll. 
-     * @param amount The amount of money to add. Negative means to remove.
-     */
-    addMoney( amount: number ): void {
+
+
+	addMoney(amount: number): void {
+		// alter wallet state
         this._money += amount;
-    }
+		// But how do we feel about that?
+		this._brain.howDoWeFeelAboutThat(amount);
+	}
 
-    /**
-     * @returns Whether the gambler has hit their target.
-     */
-    public hitTarget(): boolean { return this._money >= this._target; }
+    public hitTarget(): boolean { return this._money >= this._brain.leaveAmount; }
 
 
-    /**
-     * @returns Whether the gambler has run out of money.
-     */
     public bankrupt(): boolean { return this._money <= 0; }
     
-    /**
-     * @returns Whether the gambler is finished (i.e., if they've run out
-     * of money or have reached their target.)
-     */
     public isFinished(): boolean { 
         return (this.bankrupt() || this.hitTarget());
     }
 
-    /**
-     * @returns How much the gambler is going to bet next.
-     */
-    public abstract getBetSize(): number;
+    public getBetSize(): number {return this._brain.howMuchShouldWeBet(this._money);}
 }
 
-/**
- * The stable gambler always bets the same amount as long as they have enough
- * money. If they don't, they bet what they have. Their goal is to double 
- * their starting funds.
- */
-class StableGambler extends Gambler {
-    private _bet: number; 
 
-    public constructor( 
-        name: string, 
-        startingFunds: number, 
-        stableBet: number
-    ) {
-        super( name, startingFunds, startingFunds * 2 ); // name, starting funds, target
-        this._bet = stableBet;
-    }
-
-    public getBetSize(): number {
-		return Math.min(this._bet, this.money);
-    }
+interface MindBrain {
+	leaveAmount: number;
+// Query a thought, with relevant info
+	// How do we feel about the change in funds?
+	howDoWeFeelAboutThat(win_amount: number): void;
+	// How much do you think we should bet?
+	howMuchShouldWeBet(wallet_current: number): number;
 }
 
-/**
- * The high risk gambler always bets half of their current money. If they have
- * less than yoloAmount, they bet the remainder of their money. Their goal is
- * to make 5 times their starting amount of money. 
- */
-class HighRiskGambler extends Gambler {
-    /** if the gambler has <= this amount of money, they bet it all. */
-    private _yoloAmount: number;
-
-    /**
-     * @param yoloAmnt If the gambler has <= this amount of money, they
-     * bet everything they have remaining.
-     */
-    public constructor(
-        name: string,
-        startingFunds: number, 
-        yoloAmnt: number 
-    ) {
-        super(name, startingFunds, startingFunds * 5);
-		this._yoloAmount = yoloAmnt;
-    }
-
-	public getBetSize(): number {
-		if(this.money < this._yoloAmount) {
-			return this.money;
-		} 
-		return this.money / 2;
-	}
-}
-
-/**
- * The streak better always increases their bet whenever they win by a 
- * given multiple, and reduces their bet by a given multiple when they lose.
- * For example, if the win multiple is 2.0 and lose multiple is 0.5, the 
- * streak better will double their money when they win and halve it when they
- * lose. You can also do the reverse, making them more conservative when 
- * they win. They start at a given initial bet. 
- * 
- * How do we detect whether we won or lost? Override the addMoney method.
- */
-class StreakGambler extends Gambler {
-	// Arg 4 is the minimum amount they will bet 
-	// Arg 5 is how much they multiply their bet by when they win
-	// Arg 6 is how much they multiply their bet by when they lose
-	// Arg 7 is their target. How much they want to make. 
-	//new StreakGambler( "Camille", 200, 10, 10, 2, 0.5, 500 ),
-
-	private _minBet: number;
-	private _multiplier_win: number;
-	private _multiplier_lose: number;
+class Brain_Stable implements MindBrain {
 	private _bet: number;
+	leaveAmount: number;
 
-    /**
-     * @param yoloAmnt I don't know. I needed an argument here.
-	 * @param minBet minimum bet for this guy
-	 * @param multiplier_win how much the bet changes when they win
-	 * @param multiplier_lose how much the bet changes when they lose
-	 * @param go_home_target amount when they leave the casino
-     */
-    public constructor(
-        name: string,
-        startingFunds: number, 
-        bet: number,
-		minBet: number,
-		multiplier_win: number,
-		multiplier_lose: number,
-		go_home_target: number
-    ) {
-        super(name, startingFunds, go_home_target);
-		this._bet = bet;
-		this._minBet = minBet;
-		this._multiplier_win = multiplier_win;
-		this._multiplier_lose = multiplier_lose;
-    }
-	public getBetSize(): number {
-		return this._bet;
+	public constructor(stableBetAmnt: number, leaveGoal: number) {
+		this._bet = stableBetAmnt;
+		this.leaveAmount = leaveGoal;
 	}
 
+	public howDoWeFeelAboutThat(win_amount: number): void {
+		// We are gambling, we are already dead inside.
+	}
+	public howMuchShouldWeBet(wallet_current: number): number {
+		return Math.min(this._bet, wallet_current);		
+	}
+}
+
+class Brain_HighRisk implements MindBrain {
+	leaveAmount: number;
+	private _yoloAmnt: number; // Named after the Yolona Oss from Supreme Commander: Forged Alliance
+
+	public constructor(leaveGoal: number, yoloAmnt: number) {
+		this.leaveAmount = leaveGoal;
+		this._yoloAmnt = yoloAmnt;
+	}
+	howDoWeFeelAboutThat(win_amount: number): void {
+		// we are empty inside
+	}
+	howMuchShouldWeBet(wallet_current: number): number {
+		if(wallet_current < this._yoloAmnt) {
+			return wallet_current;
+		}
+		return wallet_current / 2;
+	}
+}
+
+class Brain_Streak implements MindBrain {
+	private _bet_min: number;
+	private _mult_win: number;
+	private _mult_lose: number;
+	private _current_bet: number;
+	leaveAmount: number;
 	
-	override addMoney(amount: number): void {
-        super.addMoney(amount);
-		if(amount > 0) {
-			this._bet = this._bet * this._multiplier_win;
+
+	public constructor(startBet: number, minBet: number, win_mult: number, lose_mult: number, leaveGoal: number) {
+		this._current_bet = startBet;
+		this._bet_min = minBet;
+		this.leaveAmount = leaveGoal;
+		this._mult_win = win_mult;
+		this._mult_lose = lose_mult;
+	}
+
+	howDoWeFeelAboutThat(win_amount: number): void {		
+		if(win_amount > 0) {
+			this._current_bet = this._current_bet * this._mult_win;
 		} else {
-			this._bet = Math.max(this._bet * this._multiplier_lose, this._minBet);
+			this._current_bet = Math.max(this._current_bet * this._mult_lose, this._bet_min);
 		}
 	}
-}
-
-
-class MartingaleGambler extends Gambler {
-    /** if the gambler has <= this amount of money, they bet it all. */
-    private _betAmnt: number;
-
-    /**
-     * @param betAmnt If the gambler has <= this amount of money, they
-     * bet everything they have remaining.
-     */
-    public constructor(
-        name: string,
-        startingFunds: number, 
-        betAmnt: number 
-    ) {
-        super(name, startingFunds, startingFunds * 5000); // 5000 times their starting funds, they are in it to win it!
-		this._betAmnt = betAmnt;
-    }
-
-	public getBetSize(): number {
-		if(this.money < this._betAmnt) {
-			return this.money;
+	howMuchShouldWeBet(wallet_current: number): number {
+		if(this._current_bet > wallet_current || wallet_current < this._bet_min) {
+			return wallet_current;
 		} 
-		return this._betAmnt;
-	}
-
-	override addMoney(amount: number): void {
-        super.addMoney(amount);
-		// If we lose, double our bet. What could possibly go wrong?
-		if(amount < 0) { 
-			this._betAmnt = this._betAmnt * 2;
-		} 
+		return this._current_bet;
 	}
 }
 
+class Brain_Martingale implements MindBrain {
+	private _bet: number;
+	leaveAmount: number;
+
+	public constructor(startBet: number, leaveGoal: number) {
+		this._bet = startBet;
+		this.leaveAmount = leaveGoal;
+	}
+
+	howDoWeFeelAboutThat(win_amount: number): void {
+		if(win_amount < 0) { 
+			this._bet = this._bet * 2;
+		} 
+	}
+	howMuchShouldWeBet(wallet_current: number): number {
+		return Math.min(this._bet, wallet_current);
+	}
+}
 
 class Casino {
     /** a list of games offered in the casino */
@@ -594,34 +523,19 @@ class Casino {
 
     public constructor( maxRounds: number ) {
         this._games = [
-            new TailsIWin("Tails I Win", this ),
-            new GuessTheNumber("Guess the Number", this ),
-            new OffTrackGuineaPigRacing("Off-track Guinea Pig Racing", this ),
-			new SlotMachcine("Suits-a-Plenty", this),
+            new Game("Tails I Win", this, new TailsIWin()),
+            new Game("Guess the Number", this, new GuessTheNumber()),
+            new Game("Off-track Guinea Pig Racing", this, new OffTrackGuineaPigRacing()),
+			//new SlotMachcine("Suits-a-Plenty", this),
         ];
 
         this._profits = 0;
 
         this._gamblers = new Set([
-            // Argument 2 is the amount they start with, 
-            // Arg 3 is how much they bet
-            new StableGambler( "Alice", 100, 15 ),
-
-            // Argument 2 is the amount they start with
-            // Arg 3 is how much they start betting
-            // the target is to make 5 times their starting balance, but 
-            // you don't see that here because it's calculated inside the 
-            // constructor instead of being passed as an argument.
-            new HighRiskGambler( "Bob", 50, 10 ),
-
-            // Arg 4 is the minimum amount they will bet 
-            // Arg 5 is how much they multiply their bet by when they win
-            // Arg 6 is how much they multiply their bet by when they lose
-            // Arg 7 is their target. How much they want to make. 
-            new StreakGambler( "Camille", 200, 10, 10, 2, 0.5, 500 ),
-
-			// MartingaleGambler
-			new MartingaleGambler("Earl Von Sandwich", 300, 1),
+            new Gambler( "Alice", new Brain_Stable(15, 200), 100),
+			new Gambler("Bob", new Brain_HighRisk(50 * 3, 10), 50),
+			new Gambler("Camille", new Brain_Streak(10,10,2,0.5,500), 200),
+			new Gambler("Earl Von Sandwich", new Brain_Martingale(1, 50000), 300),
         ]);
 
         this._maxRounds = maxRounds;
